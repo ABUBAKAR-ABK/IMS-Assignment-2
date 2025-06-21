@@ -12,7 +12,7 @@ const pool = mysql.createPool({
 
 const createUsersTable = async () => {
   try {
-    const [rows] = await pool.execute(`
+    await pool.execute(`
       CREATE TABLE IF NOT EXISTS users (
         id INT AUTO_INCREMENT PRIMARY KEY,
         email VARCHAR(255) NOT NULL UNIQUE,
@@ -22,8 +22,26 @@ const createUsersTable = async () => {
       )
     `);
     console.log('Users table checked/created.');
+
+    // Check if company_name column exists, and add if not
+    const [columns] = await pool.execute(`
+      SELECT COLUMN_NAME
+      FROM INFORMATION_SCHEMA.COLUMNS
+      WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'users' AND COLUMN_NAME = 'company_name'
+    `, [process.env.DB_NAME]);
+
+    if (columns.length === 0) {
+      await pool.execute(`
+        ALTER TABLE users
+        ADD COLUMN company_name VARCHAR(255)
+      `);
+      console.log('company_name column added to users table.');
+    } else {
+      console.log('company_name column already exists in users table.');
+    }
+
   } catch (error) {
-    console.error(`Error creating users table: ${error.message}`);
+    console.error(`Error ensuring users table and columns: ${error.message}`);
     process.exit(1);
   }
 };
