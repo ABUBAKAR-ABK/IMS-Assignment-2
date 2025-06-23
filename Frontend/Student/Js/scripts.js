@@ -1,23 +1,34 @@
 // Login main JS 
-  function handleLogin(e) {
-    e.preventDefault();
+async function handleLogin(e) {
+  e.preventDefault();
 
-    const emailInput = document.querySelector('input[type="email"]').value;
-    const passwordInput = document.querySelector('input[type="password"]').value;
+  const emailInput = document.querySelector('input[type="email"]').value;
+  const passwordInput = document.querySelector('input[type="password"]').value;
 
-    const savedStudent = JSON.parse(localStorage.getItem("student"));
+  try {
+    const response = await fetch("http://localhost:3000/api/auth/student/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        email: emailInput,
+        password: passwordInput
+      })
+    });
 
-    if (!savedStudent) {
-      alert("No student account found. Please sign up first.");
-      window.location.href = "signups.html";
-      return;
-    }
+    const data = await response.json();
 
-    if (emailInput === savedStudent.email && passwordInput === savedStudent.password) {
+    if (response.ok) {
       alert("Login successful!");
-      window.location.href = "../Images/index.html"; // Path to your student dashboard
+      // You can optionally save user info in sessionStorage/localStorage if needed
+      // localStorage.setItem("student", JSON.stringify(data.user));
+      window.location.href = "../Images/index.html"; // Student dashboard path
     } else {
-      alert("Incorrect email or password.");
+      alert(data.error);
     }
+  } catch (error) {
+    console.error("Error during login:", error);
+    alert("Something went wrong. Please try again.");
   }
-
+}

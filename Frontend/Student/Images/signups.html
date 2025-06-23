@@ -85,7 +85,7 @@
 </head>
 <body>
   <div class="form-container">
-    <form class="form-box" onsubmit="handleSignup(event)">
+<form class="form-box" action="/auth/signup" onsubmit="handleSignup(event)">
       <h2>Student Signup</h2>
 
       <input type="text" id="fullName" placeholder="Full Name" required />
@@ -102,36 +102,35 @@
   </div>
 
   <script>
-    function handleSignup(event) {
+async function handleSignup(event) {
       event.preventDefault();
 
-      const fullName = document.getElementById("fullName").value;
-      const email = document.getElementById("email").value;
-      const university = document.getElementById("university").value;
-      const major = document.getElementById("major").value;
-      const phone = document.getElementById("phone").value;
-      const password = document.getElementById("password").value;
-      const confirmPassword = document.getElementById("confirmPassword").value;
+      const name = document.querySelector('input[name="name"]').value;
+      const email = document.querySelector('input[type="email"]').value;
+      const password = document.querySelector('input[type="password"]').value;
 
-      if (password !== confirmPassword) {
-        alert("Passwords do not match!");
-        return;
+      try {
+const res = await fetch("http://localhost:3000/api/auth/admin/signup", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ name, email, password })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          alert("Signup successful!");
+          window.location.href = "login.html";
+        } else {
+          alert(data.error);
+        }
+      } catch (err) {
+        console.error("SIGNUP ERROR:", err);
+        alert("Signup failed.");
       }
-
-      const studentData = {
-        fullName,
-        email,
-        university,
-        major,
-        phone,
-        password
-      };
-
-      localStorage.setItem("student", JSON.stringify(studentData));
-      alert("Signup successful! Redirecting to your dashboard...");
-      window.location.href = "../Images/index.html"; // Student dashboard
     }
   </script>
 </body>
 </html>
-
